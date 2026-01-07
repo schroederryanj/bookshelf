@@ -24,7 +24,7 @@ export default async function EditBookPage({ params }: Props) {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Edit Book</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8">Edit Book</h1>
       <BookForm
         mode="edit"
         initialData={{

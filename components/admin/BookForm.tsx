@@ -117,7 +117,7 @@ export function BookForm({ initialData, mode }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
       {error && (
         <div className="mb-6 bg-red-50 text-red-600 p-4 rounded-md">{error}</div>
       )}

@@ -41,8 +41,8 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
   return (
     <div className="space-y-6">
       {/* Admin Title Setting */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-start justify-between">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 mb-1">
               Admin Title
@@ -62,11 +62,11 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
               />
             </div>
           </div>
-          <div className="ml-4">
+          <div className="sm:ml-4">
             <button
               onClick={() => handleSave("adminTitle", settings.adminTitle)}
               disabled={saving}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
+              className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
             >
               {saving ? "Saving..." : saved ? "Saved!" : "Save"}
             </button>
@@ -75,7 +75,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
       </div>
 
       {/* Preview */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Preview</h3>
         <div className="bg-gray-900 rounded-lg p-4 inline-flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">

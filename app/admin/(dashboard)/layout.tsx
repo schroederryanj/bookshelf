@@ -14,7 +14,7 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen">
       <AdminNav adminTitle={adminTitle} />
-      <main className="flex-1 bg-gray-100 p-8">{children}</main>
+      <main className="flex-1 bg-gray-100 p-4 pt-20 lg:p-8 lg:pt-8">{children}</main>
     </div>
   );
 }
