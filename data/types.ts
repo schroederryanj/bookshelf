@@ -7,4 +7,6 @@ export type Book = {
   pages?: number;
   genre?: string;
   description?: string;
+  rating?: number;
+  shelf?: number;
 };
