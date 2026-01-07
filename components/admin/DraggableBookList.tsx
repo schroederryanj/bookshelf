@@ -160,7 +160,7 @@ export function DraggableBookList({ books: initialBooks }: { books: Book[] }) {
       )}
 
       {/* Mobile Card View */}
-      <div className="lg:hidden space-y-3">
+      <div className="lg:hidden space-y-3 min-w-0">
         {books.map((book, index) => (
           <div
             key={book.id}
@@ -168,9 +168,9 @@ export function DraggableBookList({ books: initialBooks }: { books: Book[] }) {
             onDragStart={() => handleDragStart(index)}
             onDragOver={(e) => handleDragOver(e, index)}
             onDrop={handleDrop}
-            className="bg-white rounded-lg shadow-sm border border-gray-100 p-4"
+            className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 min-w-0"
           >
-            <div className="flex gap-4">
+            <div className="flex gap-3 min-w-0">
               {/* Drag Handle & Cover */}
               <div className="flex items-start gap-2">
                 <div className="text-gray-400 cursor-move mt-2">
@@ -190,9 +190,9 @@ export function DraggableBookList({ books: initialBooks }: { books: Book[] }) {
               </div>
 
               {/* Book Info */}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-gray-900 truncate">{book.title}</h3>
-                <p className="text-sm text-gray-500 truncate">{book.author || "Unknown author"}</p>
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <h3 className="font-medium text-gray-900 truncate text-sm">{book.title}</h3>
+                <p className="text-xs text-gray-500 truncate">{book.author || "Unknown author"}</p>
 
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   {renderStatusBadge(book.read)}

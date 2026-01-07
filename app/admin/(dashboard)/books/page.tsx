@@ -19,12 +19,12 @@ export default async function AdminBooksPage() {
   });
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">All Books</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 min-w-0">All Books</h1>
         <Link
           href="/admin/books/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-center sm:text-left"
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-center sm:text-left whitespace-nowrap flex-shrink-0"
         >
           Add New Book
         </Link>

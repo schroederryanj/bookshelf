@@ -12,9 +12,9 @@ export default async function DashboardLayout({
   const adminTitle = titleSetting?.value || "Bookshelf";
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen overflow-x-hidden">
       <AdminNav adminTitle={adminTitle} />
-      <main className="flex-1 bg-gray-100 p-4 pt-20 lg:p-8 lg:pt-8">{children}</main>
+      <main className="flex-1 min-w-0 bg-gray-100 p-4 pt-20 lg:p-8 lg:pt-8 overflow-x-hidden">{children}</main>
     </div>
   );
 }
