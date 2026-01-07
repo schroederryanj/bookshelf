@@ -27,7 +27,7 @@ export default async function Home() {
       {/* Admin Login Button */}
       <Link
         href="/admin"
-        className="fixed top-12 right-2 sm:top-4 sm:right-4 z-50 p-2 rounded-full bg-black/10 hover:bg-black/20 transition-colors group"
+        className="fixed top-24 right-2 sm:top-4 sm:right-4 z-50 p-2 rounded-full bg-black/10 hover:bg-black/20 transition-colors group"
         title="Admin Login"
       >
         <svg
