@@ -293,7 +293,7 @@ export function Shelf({ books }: { books: Book[] }) {
                             className="flex items-center justify-between text-sm"
                           >
                             <span className="text-[#6b5a4a]">
-                              {factor.shortLabel}
+                              {factor.label}
                             </span>
                             <div className="flex items-center gap-1">
                               {[1, 2, 3, 4, 5].map((star) => (

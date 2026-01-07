@@ -1,11 +1,11 @@
 export const RATING_FACTORS = [
   { key: "ratingWriting", label: "Writing", shortLabel: "Writing" },
   { key: "ratingPlot", label: "Plot", shortLabel: "Plot" },
-  { key: "ratingCharacters", label: "Characters", shortLabel: "Chars" },
+  { key: "ratingCharacters", label: "Characters", shortLabel: "Characters" },
   { key: "ratingPacing", label: "Pacing", shortLabel: "Pacing" },
   { key: "ratingWorldBuilding", label: "World-building", shortLabel: "World" },
-  { key: "ratingEnjoyment", label: "Enjoyment", shortLabel: "Enjoy" },
-  { key: "ratingRecommend", label: "Would Recommend", shortLabel: "Rec" },
+  { key: "ratingEnjoyment", label: "Enjoyment", shortLabel: "Enjoyment" },
+  { key: "ratingRecommend", label: "Would Recommend", shortLabel: "Recommend" },
 ] as const;
 
 export type RatingFactorKey = (typeof RATING_FACTORS)[number]["key"];
