@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { BookSearch, BookSearchResult } from "./BookSearch";
 
 type BookData = {
   id?: number;
@@ -30,6 +31,8 @@ export function BookForm({ initialData, mode }: Props) {
   const [imagePreview, setImagePreview] = useState<string | null>(
     initialData?.img ? `/${initialData.img}` : null
   );
+  // State for book selected from search
+  const [selectedThumbnail, setSelectedThumbnail] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
@@ -48,6 +51,26 @@ export function BookForm({ initialData, mode }: Props) {
     if (file) {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+      setSelectedThumbnail(null); // Clear search thumbnail if user uploads
+    }
+  };
+
+  // Handler for when a book is selected from search
+  const handleBookSelect = (book: BookSearchResult) => {
+    setFormData({
+      ...formData,
+      title: book.title,
+      author: book.author || "",
+      pages: book.pages?.toString() || "",
+      genre: book.genre || "",
+      description: book.description || "",
+    });
+
+    // Set thumbnail for potential download
+    if (book.thumbnail) {
+      setSelectedThumbnail(book.thumbnail);
+      setImagePreview(book.thumbnail);
+      setImageFile(null); // Clear any uploaded file
     }
   };
 
@@ -76,6 +99,24 @@ export function BookForm({ initialData, mode }: Props) {
 
         const uploadResult = await uploadRes.json();
         imagePath = uploadResult.path;
+      }
+      // Download cover from Google Books if selected from search
+      else if (selectedThumbnail && !formData.img) {
+        const coverRes = await fetch("/api/books/cover", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrl: selectedThumbnail,
+            title: formData.title,
+          }),
+        });
+
+        if (coverRes.ok) {
+          const coverResult = await coverRes.json();
+          imagePath = coverResult.path;
+        } else {
+          throw new Error("Failed to download cover image");
+        }
       }
 
       const bookData = {
@@ -121,6 +162,9 @@ export function BookForm({ initialData, mode }: Props) {
       {error && (
         <div className="mb-6 bg-red-50 text-red-600 p-4 rounded-md">{error}</div>
       )}
+
+      {/* Book Search */}
+      <BookSearch onSelect={handleBookSelect} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column */}
@@ -285,17 +329,27 @@ export function BookForm({ initialData, mode }: Props) {
         {/* Right Column - Image */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Cover Image {mode === "create" && "*"}
+            Cover Image {mode === "create" && !selectedThumbnail && "*"}
           </label>
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
             {imagePreview ? (
               <div className="relative w-full aspect-[2/3] max-w-xs mx-auto">
-                <Image
-                  src={imagePreview}
-                  alt="Cover preview"
-                  fill
-                  className="object-contain rounded"
-                />
+                {imagePreview.startsWith("http") ? (
+                  // External URL from Google Books
+                  <img
+                    src={imagePreview}
+                    alt="Cover preview"
+                    className="w-full h-full object-contain rounded"
+                  />
+                ) : (
+                  // Local image
+                  <Image
+                    src={imagePreview}
+                    alt="Cover preview"
+                    fill
+                    className="object-contain rounded"
+                  />
+                )}
               </div>
             ) : (
               <div className="w-full aspect-[2/3] max-w-xs mx-auto bg-gray-100 rounded flex items-center justify-center">
@@ -309,7 +363,9 @@ export function BookForm({ initialData, mode }: Props) {
               className="mt-4 w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
             <p className="text-xs text-gray-500 mt-2">
-              Accepted formats: WebP, PNG, JPG
+              {selectedThumbnail
+                ? "Cover from Google Books will be downloaded, or upload your own"
+                : "Accepted formats: WebP, PNG, JPG"}
             </p>
           </div>
 
