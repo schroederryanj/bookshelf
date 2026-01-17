@@ -175,7 +175,10 @@ export function BookSearch({ onSelect }: Props) {
                 <p className="text-xs text-gray-400">
                   {book.pages && `${book.pages} pages`}
                   {book.pages && book.genre && " · "}
-                  {book.genre}
+                  {book.genre
+                    ?.split(",")
+                    .map((g) => g.trim())
+                    .join(" · ")}
                 </p>
               </div>
             </button>

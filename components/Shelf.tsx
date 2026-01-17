@@ -337,11 +337,15 @@ export function Shelf({ books }: { books: Book[] }) {
                         {selectedBook.read}
                       </span>
                     )}
-                    {selectedBook.genre && (
-                      <span className="px-3 py-1 rounded-full text-sm font-medium bg-[#A07A55]/15 text-[#8B6B4F]">
-                        {selectedBook.genre}
-                      </span>
-                    )}
+                    {selectedBook.genre &&
+                      selectedBook.genre.split(",").map((g, i) => (
+                        <span
+                          key={i}
+                          className="px-3 py-1 rounded-full text-sm font-medium bg-[#A07A55]/15 text-[#8B6B4F]"
+                        >
+                          {g.trim()}
+                        </span>
+                      ))}
                     {selectedBook.pages && (
                       <span className="px-3 py-1 rounded-full text-sm font-medium bg-[#6b5a4a]/10 text-[#6b5a4a]">
                         {selectedBook.pages} pages

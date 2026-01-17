@@ -25,12 +25,26 @@ export default async function AdminDashboard() {
     },
   });
 
-  const genreCounts = await prisma.book.groupBy({
-    by: ["genre"],
-    _count: { genre: true },
-    orderBy: { _count: { genre: "desc" } },
-    take: 5,
+  // Get all books with genres and count individual genres (split by comma)
+  const booksWithGenres = await prisma.book.findMany({
+    where: { genre: { not: null } },
+    select: { genre: true },
   });
+
+  const genreCountMap = new Map<string, number>();
+  for (const book of booksWithGenres) {
+    if (book.genre) {
+      const genres = book.genre.split(",").map((g) => g.trim());
+      for (const genre of genres) {
+        genreCountMap.set(genre, (genreCountMap.get(genre) || 0) + 1);
+      }
+    }
+  }
+
+  const genreCounts = Array.from(genreCountMap.entries())
+    .map(([genre, count]) => ({ genre, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
 
   const readPercentage = totalBooks > 0 ? Math.round((readBooks / totalBooks) * 100) : 0;
 
@@ -183,8 +197,8 @@ export default async function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Top Genres</h2>
           <div className="space-y-3">
-            {genreCounts.map((genre: { genre: string | null; _count: { genre: number } }, index: number) => {
-              const percentage = Math.round((genre._count.genre / totalBooks) * 100);
+            {genreCounts.map((item, index) => {
+              const percentage = Math.round((item.count / totalBooks) * 100);
               const colors = [
                 "bg-blue-500",
                 "bg-green-500",
@@ -193,10 +207,10 @@ export default async function AdminDashboard() {
                 "bg-pink-500",
               ];
               return (
-                <div key={genre.genre || "unknown"}>
+                <div key={item.genre}>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">{genre.genre || "Uncategorized"}</span>
-                    <span className="text-gray-500">{genre._count.genre}</span>
+                    <span className="text-gray-600">{item.genre}</span>
+                    <span className="text-gray-500">{item.count}</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2">
                     <div
