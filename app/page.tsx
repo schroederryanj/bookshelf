@@ -17,6 +17,8 @@ export default async function Home() {
     img: book.img,
     height: book.height,
     read: book.read ?? undefined,
+    dateStarted: book.dateStarted ?? undefined,
+    dateFinished: book.dateFinished ?? undefined,
     author: book.author ?? undefined,
     pages: book.pages ?? undefined,
     genre: book.genre ?? undefined,
