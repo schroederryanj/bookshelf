@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { SettingsForm } from "@/components/admin/SettingsForm";
 
+export const dynamic = "force-dynamic";
+
 const DEFAULT_SETTINGS: Record<string, string> = {
   adminTitle: "Bookshelf",
 };

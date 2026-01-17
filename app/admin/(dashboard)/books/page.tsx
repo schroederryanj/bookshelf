@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { DraggableBookList } from "@/components/admin/DraggableBookList";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminBooksPage() {
   const books = await prisma.book.findMany({
     orderBy: { position: "asc" },

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { BookForm } from "@/components/admin/BookForm";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 type Props = {
   params: Promise<{ id: string }>;
 };

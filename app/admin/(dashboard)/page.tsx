@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
   const totalBooks = await prisma.book.count();
   const readBooks = await prisma.book.count({ where: { read: "Read" } });

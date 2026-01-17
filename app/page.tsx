@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { Book } from "@/data/types";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const dbBooks = await prisma.book.findMany({
     orderBy: { position: "asc" },
