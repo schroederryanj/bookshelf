@@ -2,6 +2,8 @@
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Book } from "@/data/types";
+import { RATING_FACTORS } from "@/lib/ratings";
+import { StarRating } from "./ui/StarRating";
 
 const shelfHeight = 500;
 const shelfThickness = 20;
@@ -207,64 +209,165 @@ export function Shelf({ books }: { books: Book[] }) {
       {/* Popup / Modal */}
       {selectedBook && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onClick={() => setSelectedBook(null)}
         >
           <div
-            className="bg-[#fef9ed]  shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden"
+            className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden rounded-sm"
             onClick={(e) => e.stopPropagation()}
             style={{
+              background: "linear-gradient(135deg, #fef9ed 0%, #f5ebe0 100%)",
               boxShadow:
-                "0 10px 25px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(0,0,0,0.1)",
+                "0 25px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.5)",
               fontFamily: "'Georgia', serif",
+              border: "2px solid #A07A55",
             }}
           >
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedBook(null)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-black/10 hover:bg-black/20 transition-colors z-10"
+            >
+              <svg className="w-5 h-5 text-[#3d2e1f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
             {/* Scrollable content */}
-            <div className="overflow-y-auto p-6 flex-1">
-              <h2 className="text-2xl  mb-1 text-center text-black">
-                {selectedBook.title}
-              </h2>
-              {selectedBook.author && (
-                <h3 className="text-lg text-black mb-4 text-center italic">
-                  By {selectedBook.author}
-                </h3>
-              )}
-              {selectedBook.pages && (
-                <h3 className="text-lg text-black">
-                  Page count: {selectedBook.pages}
-                </h3>
-              )}
-              {selectedBook.genre && (
-                <h3 className="text-lg text-black">
-                  Genre(s): {selectedBook.genre}
-                </h3>
-              )}
-              {selectedBook.read && (
-                <h3 className="text-lg text-black">
-                  Status: {selectedBook.read}
-                </h3>
-              )}
+            <div className="overflow-y-auto flex-1">
+              {/* Header with book cover */}
+              <div className="flex flex-col sm:flex-row gap-6 p-6 pb-4">
+                {/* Book Cover */}
+                <div className="flex-shrink-0 flex justify-center sm:justify-start">
+                  <div
+                    className="relative"
+                    style={{
+                      boxShadow: "4px 4px 15px rgba(0,0,0,0.3), -1px -1px 5px rgba(0,0,0,0.1)",
+                    }}
+                  >
+                    <img
+                      src={selectedBook.img}
+                      alt={selectedBook.title}
+                      className="h-48 sm:h-56 w-auto object-cover"
+                    />
+                  </div>
+                </div>
 
-              {selectedBook.read && selectedBook.description && (
-                <hr className="my-4 border-t border-black" />
-              )}
+                {/* Book Info */}
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-2xl sm:text-3xl font-semibold text-[#3d2e1f] leading-tight">
+                    {selectedBook.title}
+                  </h2>
 
+                  {selectedBook.author && (
+                    <p className="text-lg text-[#6b5a4a] mt-1 italic">
+                      by {selectedBook.author}
+                    </p>
+                  )}
+
+                  {/* Overall Rating */}
+                  {selectedBook.ratingOverall && (
+                    <div className="flex items-center gap-2 mt-3">
+                      <StarRating
+                        value={selectedBook.ratingOverall}
+                        size="sm"
+                        disabled
+                      />
+                      <span className="text-sm text-[#6b5a4a]">
+                        {selectedBook.ratingOverall.toFixed(1)}/5
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Rating Factors Breakdown */}
+                  {selectedBook.ratingOverall && (
+                    <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1">
+                      {RATING_FACTORS.map((factor) => {
+                        const value = selectedBook[
+                          factor.key as keyof Book
+                        ] as number | undefined;
+                        if (!value) return null;
+                        return (
+                          <div
+                            key={factor.key}
+                            className="flex items-center justify-between text-sm"
+                          >
+                            <span className="text-[#6b5a4a]">
+                              {factor.label}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <svg
+                                  key={star}
+                                  className={`w-3 h-3 ${
+                                    star <= value
+                                      ? "text-yellow-500 fill-yellow-500"
+                                      : "text-[#d4c4b0]"
+                                  }`}
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={1.5}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
+                                  />
+                                </svg>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Meta info badges */}
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {selectedBook.read && (
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          selectedBook.read === "Read"
+                            ? "bg-[#2d5a27]/15 text-[#2d5a27]"
+                            : selectedBook.read === "Reading"
+                            ? "bg-[#8b5a2b]/15 text-[#8b5a2b]"
+                            : "bg-[#6b5a4a]/15 text-[#6b5a4a]"
+                        }`}
+                      >
+                        {selectedBook.read}
+                      </span>
+                    )}
+                    {selectedBook.genre &&
+                      selectedBook.genre.split(",").map((g, i) => (
+                        <span
+                          key={i}
+                          className="px-3 py-1 rounded-full text-sm font-medium bg-[#A07A55]/15 text-[#8B6B4F]"
+                        >
+                          {g.trim()}
+                        </span>
+                      ))}
+                    {selectedBook.pages && (
+                      <span className="px-3 py-1 rounded-full text-sm font-medium bg-[#6b5a4a]/10 text-[#6b5a4a]">
+                        {selectedBook.pages} pages
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
               {selectedBook.description && (
-                <p className="text-gray-800 whitespace-pre-line leading-relaxed mt-4">
-                  {selectedBook.description}
-                </p>
+                <div className="px-6 pb-6">
+                  <div className="h-px bg-gradient-to-r from-transparent via-[#c4a77d] to-transparent mb-4" />
+                  <p className="text-[#4a3f35] whitespace-pre-line leading-relaxed">
+                    {selectedBook.description}
+                  </p>
+                </div>
               )}
             </div>
 
-            {/* Sticky footer */}
-            <div className="p-4 bg-[#fef9ed]">
-              <button
-                onClick={() => setSelectedBook(null)}
-                className="w-full px-4 py-2 bg-transparent text-black border-2 border-black hover:bg-black/5 transition-colors"
-              >
-                Close
-              </button>
-            </div>
+            {/* Footer */}
+            <div className="h-1.5 bg-gradient-to-r from-[#A07A55] via-[#c4a77d] to-[#A07A55]" />
           </div>
         </div>
       )}

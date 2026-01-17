@@ -1,0 +1,53 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Book {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(500)
+  img         String   @db.VarChar(500)
+  height      Float
+  read        String?
+  author      String?  @db.VarChar(500)
+  pages       Int?
+  genre       String?  @db.VarChar(255)
+  description String?  @db.Text
+  rating      Int?     // Legacy - to be removed after migration
+
+  // Multi-factor rating system (1-5 scale each)
+  ratingWriting       Int?
+  ratingPlot          Int?
+  ratingCharacters    Int?
+  ratingPacing        Int?
+  ratingWorldBuilding Int?
+  ratingEnjoyment     Int?
+  ratingRecommend     Int?
+  ratingOverall       Float?            // Auto-calculated or manual override
+  ratingOverrideManual Boolean @default(false)
+
+  shelf       Int      @default(1)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([title])
+  @@index([author])
+  @@index([read])
+  @@index([shelf])
+  @@index([position])
+  @@index([rating])
+  @@index([ratingOverall])
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
