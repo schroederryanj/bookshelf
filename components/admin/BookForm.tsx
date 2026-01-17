@@ -13,6 +13,8 @@ type BookData = {
   img: string;
   height: number;
   read: string | null;
+  dateStarted: string | null;
+  dateFinished: string | null;
   author: string | null;
   pages: number | null;
   genre: string | null;
@@ -52,6 +54,8 @@ export function BookForm({ initialData, mode }: Props) {
     img: initialData?.img || "",
     height: initialData?.height || 7,
     read: initialData?.read || "Unread",
+    dateStarted: initialData?.dateStarted || "",
+    dateFinished: initialData?.dateFinished || "",
     author: initialData?.author || "",
     pages: initialData?.pages || "",
     genre: initialData?.genre || "",
@@ -173,6 +177,8 @@ export function BookForm({ initialData, mode }: Props) {
         img: imagePath,
         height: Number(formData.height),
         read: formData.read || null,
+        dateStarted: formData.dateStarted || null,
+        dateFinished: formData.dateFinished || null,
         author: formData.author || null,
         pages: formData.pages ? Number(formData.pages) : null,
         genre: formData.genre || null,
@@ -306,6 +312,36 @@ export function BookForm({ initialData, mode }: Props) {
                 <option value="Reading">Reading</option>
                 <option value="Read">Read</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date Started
+              </label>
+              <input
+                type="text"
+                value={formData.dateStarted}
+                onChange={(e) =>
+                  setFormData({ ...formData, dateStarted: e.target.value })
+                }
+                placeholder="e.g., January 2026"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date Finished
+              </label>
+              <input
+                type="text"
+                value={formData.dateFinished}
+                onChange={(e) =>
+                  setFormData({ ...formData, dateFinished: e.target.value })
+                }
+                placeholder="e.g., February 2026"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+              />
             </div>
 
             <div>

@@ -3,6 +3,8 @@ export type Book = {
   img: string;
   height: number;
   read?: string;
+  dateStarted?: string;
+  dateFinished?: string;
   author?: string;
   pages?: number;
   genre?: string;

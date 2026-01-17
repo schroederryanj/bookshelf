@@ -14,8 +14,10 @@ model Book {
   title       String   @db.VarChar(500)
   img         String   @db.VarChar(500)
   height      Float
-  read        String?
-  author      String?  @db.VarChar(500)
+  read          String?
+  dateStarted   String?  @db.VarChar(100)
+  dateFinished  String?  @db.VarChar(100)
+  author        String?  @db.VarChar(500)
   pages       Int?
   genre       String?  @db.VarChar(255)
   description String?  @db.Text

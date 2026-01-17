@@ -35,6 +35,8 @@ export default async function EditBookPage({ params }: Props) {
           img: book.img,
           height: book.height,
           read: book.read,
+          dateStarted: book.dateStarted,
+          dateFinished: book.dateFinished,
           author: book.author,
           pages: book.pages,
           genre: book.genre,

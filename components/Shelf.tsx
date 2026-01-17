@@ -352,6 +352,18 @@ export function Shelf({ books }: { books: Book[] }) {
                       </span>
                     )}
                   </div>
+
+                  {/* Reading dates */}
+                  {(selectedBook.dateStarted || selectedBook.dateFinished) && (
+                    <div className="flex flex-wrap gap-3 mt-2 text-sm text-[#6b5a4a]">
+                      {selectedBook.dateStarted && (
+                        <span>Started: {selectedBook.dateStarted}</span>
+                      )}
+                      {selectedBook.dateFinished && (
+                        <span>Finished: {selectedBook.dateFinished}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 

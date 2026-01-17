@@ -51,6 +51,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         img: body.img,
         height: body.height,
         read: body.read ?? null,
+        dateStarted: body.dateStarted ?? null,
+        dateFinished: body.dateFinished ?? null,
         author: body.author ?? null,
         pages: body.pages ?? null,
         genre: body.genre ?? null,
