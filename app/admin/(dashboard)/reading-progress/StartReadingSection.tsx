@@ -34,11 +34,14 @@ export function StartReadingSection({ books }: StartReadingSectionProps) {
       });
 
       if (response.ok) {
-        // Also update the book's read status
+        // Also update the book's read status and start date
         await fetch(`/api/books/${bookId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ read: "Reading" }),
+          body: JSON.stringify({
+            read: "Reading",
+            dateStarted: new Date().toISOString().split("T")[0],
+          }),
         });
         // Refresh the page to show updated data
         window.location.reload();

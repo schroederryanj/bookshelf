@@ -86,6 +86,51 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   }
 }
 
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  try {
+    const { id } = await context.params;
+    const bookId = parseInt(id, 10);
+
+    if (isNaN(bookId)) {
+      return NextResponse.json({ error: "Invalid book ID" }, { status: 400 });
+    }
+
+    const body = await request.json();
+
+    // Only update fields that are provided (partial update)
+    const updateData: Record<string, unknown> = {};
+
+    if (body.read !== undefined) updateData.read = body.read;
+    if (body.dateStarted !== undefined) updateData.dateStarted = body.dateStarted;
+    if (body.dateFinished !== undefined) updateData.dateFinished = body.dateFinished;
+    if (body.title !== undefined) updateData.title = body.title;
+    if (body.author !== undefined) updateData.author = body.author;
+    if (body.pages !== undefined) updateData.pages = body.pages;
+    if (body.genre !== undefined) updateData.genre = body.genre;
+    if (body.description !== undefined) updateData.description = body.description;
+    if (body.ratingOverall !== undefined) updateData.ratingOverall = body.ratingOverall;
+
+    const book = await prisma.book.update({
+      where: { id: bookId },
+      data: updateData,
+    });
+
+    // Revalidate cached pages
+    revalidatePath("/");
+    revalidatePath("/admin/books");
+    revalidatePath("/admin");
+    revalidatePath("/admin/reading-progress");
+
+    return NextResponse.json(book);
+  } catch (error) {
+    console.error("Error patching book:", error);
+    return NextResponse.json(
+      { error: "Failed to update book" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
