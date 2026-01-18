@@ -59,6 +59,7 @@ import {
   timeQueryHandler,
   complexFilterHandler,
   moreResultsHandler,
+  drewbertsPicksHandler,
 } from './handlers/collection-handlers';
 import {
   isMoreRequest,
@@ -420,6 +421,15 @@ async function routeToHandler(
 
     case AIIntentType.COMPLEX_FILTER: {
       const result = await complexFilterHandler(handlerIntent, handlerContext);
+      return {
+        success: result.success,
+        message: result.message,
+        data: result.data,
+      };
+    }
+
+    case AIIntentType.DREWBERTS_PICKS: {
+      const result = await drewbertsPicksHandler(handlerIntent, handlerContext);
       return {
         success: result.success,
         message: result.message,

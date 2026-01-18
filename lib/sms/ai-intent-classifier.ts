@@ -114,6 +114,13 @@ const FALLBACK_PATTERNS: Array<{
     extractParams: () => ({}),
   },
 
+  // Drewberts Picks - curated recommendations
+  {
+    pattern: /drewbert'?s?\s*picks?/i,
+    intent: AIIntentType.DREWBERTS_PICKS,
+    extractParams: () => ({}),
+  },
+
   // ============================================
   // NEW INTENT PATTERNS
   // ============================================
@@ -947,6 +954,9 @@ export function quickIntentCheck(message: string): AIIntentType {
 
   // Help - only exact matches to avoid false positives
   if (/^(help|commands|\?)$/i.test(lower)) return AIIntentType.HELP;
+
+  // Drewberts Picks
+  if (/drewbert'?s?\s*picks?/i.test(lower)) return AIIntentType.DREWBERTS_PICKS;
 
   // New comprehensive query intents (more specific, check first)
   // COMPLEX_FILTER - multiple criteria

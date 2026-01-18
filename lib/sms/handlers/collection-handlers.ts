@@ -953,6 +953,50 @@ export const complexFilterHandler: CommandHandler = async (intent, _context) => 
 };
 
 /**
+ * Handle Drewberts Picks - curated top recommendations
+ * Returns highest-rated books from the collection
+ */
+export const drewbertsPicksHandler: CommandHandler = async (_intent, _context) => {
+  try {
+    const books = await prisma.book.findMany({
+      where: {
+        ratingOverall: { gte: 4 },
+      },
+      select: {
+        id: true,
+        title: true,
+        author: true,
+        ratingOverall: true,
+        genre: true,
+        read: true,
+      },
+      orderBy: [
+        { ratingOverall: "desc" },
+        { title: "asc" },
+      ],
+      take: 7,
+    });
+
+    if (books.length === 0) {
+      return successResult("No picks yet! Rate some books 4+ stars to see Drewbert's Picks.");
+    }
+
+    const lines = ["⭐ Drewbert's Picks ⭐", ""];
+    books.forEach((book, idx) => {
+      const status = book.read === "Read" ? "✓" : book.read === "Reading" ? "📖" : "";
+      const rating = book.ratingOverall ? `★${book.ratingOverall}` : "";
+      lines.push(`${idx + 1}. ${status}${truncate(book.title, 25)} ${rating}`);
+    });
+
+    return successResult(lines.join("\n"), {
+      books: books.map((b) => ({ id: b.id, title: b.title, rating: b.ratingOverall })),
+    });
+  } catch (error) {
+    return errorResult("Sorry, couldn't fetch Drewbert's Picks.", error);
+  }
+};
+
+/**
  * Handle "more" / pagination request
  */
 export const moreResultsHandler: CommandHandler = async (_intent, context) => {

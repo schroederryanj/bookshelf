@@ -166,6 +166,7 @@ export enum AIIntentType {
   COMPARE_BOOKS = 'COMPARE_BOOKS',         // "Which is longer, Dune or LOTR?", "Compare ratings"
   TIME_QUERY = 'TIME_QUERY',               // "What did I read last month?", "Books finished in 2023"
   COMPLEX_FILTER = 'COMPLEX_FILTER',       // "Unread books under 300 pages", "Fantasy rated 4+ stars"
+  DREWBERTS_PICKS = 'DREWBERTS_PICKS',     // "Drewberts Picks" - curated top recommendations
 }
 
 export type StatType =

@@ -535,6 +535,7 @@ export function handleHelp(): HandlerResponse {
     'Search: "find Harry Potter"',
     'History: "What X books have I read?"',
     'Suggest: "recommend fantasy"',
+    'Picks: "Drewberts Picks"',
     'Status: "what am I reading?"',
     'Stats: "my stats"',
     '',

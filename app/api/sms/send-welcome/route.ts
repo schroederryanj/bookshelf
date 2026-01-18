@@ -16,6 +16,7 @@ You can manage your reading via text:
 🔍 Search: "find Harry Potter"
 📚 History: "What Sanderson books have I read?"
 💡 Suggest: "recommend fantasy"
+⭐ Picks: "Drewberts Picks"
 📊 Status: "what am I reading?"
 📈 Stats: "my stats"
 ❓ Help: "help"

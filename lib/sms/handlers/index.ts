@@ -184,6 +184,7 @@ export {
   timeQueryHandler,
   complexFilterHandler,
   moreResultsHandler,
+  drewbertsPicksHandler,
 } from "./collection-handlers";
 
 /**
@@ -309,6 +310,7 @@ import {
   timeQueryHandler,
   complexFilterHandler,
   moreResultsHandler,
+  drewbertsPicksHandler,
 } from "./collection-handlers";
 
 export const handlers: Record<string, CommandHandler> = {
@@ -543,6 +545,12 @@ export const handlers: Record<string, CommandHandler> = {
   "unread-list": collectionUnreadBooksHandler,
   "to-read": collectionUnreadBooksHandler,
   "genre-query": genreQueryHandler,
+
+  // Drewberts Picks
+  "drewberts-picks": drewbertsPicksHandler,
+  "drewbert-picks": drewbertsPicksHandler,
+  "drewberts": drewbertsPicksHandler,
+  picks: drewbertsPicksHandler,
 };
 
 /**
