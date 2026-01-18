@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 const DEFAULT_SETTINGS: Record<string, string> = {
   adminTitle: "Bookshelf",
+  adminPhoneNumbers: "",
 };
 
 export default async function SettingsPage() {

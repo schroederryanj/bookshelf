@@ -68,6 +68,25 @@ export interface MockReadingStreak {
   updatedAt: Date;
 }
 
+export interface MockSMSConversation {
+  id: string;
+  phoneNumber: string;
+  userId: string;
+  context: Record<string, unknown> | null;
+  lastIntent: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface MockSMSMessage {
+  id: string;
+  conversationId: string;
+  direction: 'inbound' | 'outbound';
+  body: string;
+  twilioSid: string | null;
+  createdAt: Date;
+}
+
 // Factory functions for creating mock data
 export function createMockBook(overrides: Partial<MockBook> = {}): MockBook {
   return {
@@ -159,6 +178,35 @@ export function createMockReadingStreak(
   };
 }
 
+export function createMockSMSConversation(
+  overrides: Partial<MockSMSConversation> = {}
+): MockSMSConversation {
+  return {
+    id: 'conv_test123',
+    phoneNumber: '+15551234567',
+    userId: 'default',
+    context: null,
+    lastIntent: null,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
+    ...overrides,
+  };
+}
+
+export function createMockSMSMessage(
+  overrides: Partial<MockSMSMessage> = {}
+): MockSMSMessage {
+  return {
+    id: 'msg_test123',
+    conversationId: 'conv_test123',
+    direction: 'inbound',
+    body: 'Test message',
+    twilioSid: null,
+    createdAt: new Date('2024-01-01'),
+    ...overrides,
+  };
+}
+
 // Mock Prisma client
 export const mockPrismaClient = {
   book: {
@@ -179,6 +227,7 @@ export const mockPrismaClient = {
     update: vi.fn(),
     upsert: vi.fn(),
     delete: vi.fn(),
+    count: vi.fn(),
   },
   readingSession: {
     findMany: vi.fn(),
@@ -207,6 +256,36 @@ export const mockPrismaClient = {
   },
   setting: {
     findUnique: vi.fn(),
+    upsert: vi.fn(),
+  },
+  sMSConversation: {
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    upsert: vi.fn(),
+    delete: vi.fn(),
+  },
+  sMSMessage: {
+    findMany: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    delete: vi.fn(),
+  },
+  achievement: {
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  },
+  userAchievement: {
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
     upsert: vi.fn(),
   },
   $transaction: vi.fn((callback) => callback(mockPrismaClient)),

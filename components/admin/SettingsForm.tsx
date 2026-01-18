@@ -12,6 +12,11 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
   const [settings, setSettings] = useState(initialSettings);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [sendingWelcome, setSendingWelcome] = useState(false);
+  const [welcomeResult, setWelcomeResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   const handleSave = async (key: string, value: string) => {
     setSaving(true);
@@ -35,6 +40,36 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
       alert("An error occurred");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSendWelcomeSMS = async () => {
+    setSendingWelcome(true);
+    setWelcomeResult(null);
+
+    try {
+      const res = await fetch("/api/sms/send-welcome", {
+        method: "POST",
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setWelcomeResult({ success: true, message: data.message });
+      } else {
+        setWelcomeResult({
+          success: false,
+          message: data.error || "Failed to send welcome SMS",
+        });
+      }
+    } catch {
+      setWelcomeResult({
+        success: false,
+        message: "An error occurred while sending SMS",
+      });
+    } finally {
+      setSendingWelcome(false);
+      setTimeout(() => setWelcomeResult(null), 5000);
     }
   };
 
@@ -71,6 +106,101 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
               {saving ? "Saving..." : saved ? "Saved!" : "Save"}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Admin Phone Numbers Setting */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+              SMS Assistant Phone Numbers
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Phone numbers that can use the SMS assistant. Separate multiple
+              numbers with commas. Use E.164 format (e.g., +15551234567) or 10-digit US numbers.
+            </p>
+            <div className="max-w-md">
+              <input
+                type="text"
+                value={settings.adminPhoneNumbers || ""}
+                onChange={(e) =>
+                  setSettings({ ...settings, adminPhoneNumbers: e.target.value })
+                }
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                placeholder="+15551234567, +15559876543"
+              />
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() =>
+                handleSave("adminPhoneNumbers", settings.adminPhoneNumbers || "")
+              }
+              disabled={saving}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
+            >
+              {saving ? "Saving..." : saved ? "Saved!" : "Save"}
+            </button>
+            <button
+              onClick={handleSendWelcomeSMS}
+              disabled={sendingWelcome || !settings.adminPhoneNumbers?.trim()}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              {sendingWelcome ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                    />
+                  </svg>
+                  Send Welcome SMS
+                </>
+              )}
+            </button>
+          </div>
+          {welcomeResult && (
+            <div
+              className={`mt-2 p-3 rounded-lg text-sm ${
+                welcomeResult.success
+                  ? "bg-green-50 text-green-800 border border-green-200"
+                  : "bg-red-50 text-red-800 border border-red-200"
+              }`}
+            >
+              {welcomeResult.message}
+            </div>
+          )}
         </div>
       </div>
 

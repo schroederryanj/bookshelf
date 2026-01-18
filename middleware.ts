@@ -21,6 +21,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
+    // Allow /api/sms/webhook POST for Twilio (has its own signature validation)
+    if (pathname === "/api/sms/webhook" && request.method === "POST") {
+      return NextResponse.next();
+    }
+
     const sessionToken = request.cookies.get("admin_session")?.value;
 
     if (!sessionToken || !(await verifySession(sessionToken))) {
