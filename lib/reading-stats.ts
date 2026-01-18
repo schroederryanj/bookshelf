@@ -163,7 +163,8 @@ export async function calculateStreak(userId: string): Promise<ReadingStreak> {
 
 // Define and check milestones
 export async function calculateMilestones(userId: string): Promise<ReadingMilestone[]> {
-  const completedBooks = await prisma.readingProgress.findMany({
+  // Get completed books from ReadingProgress
+  const completedProgressBooks = await prisma.readingProgress.findMany({
     where: {
       userId,
       status: "COMPLETED",
@@ -171,15 +172,39 @@ export async function calculateMilestones(userId: string): Promise<ReadingMilest
     orderBy: { completedAt: "asc" },
   });
 
+  // Get book IDs that have ReadingProgress COMPLETED status to avoid double-counting
+  const progressBookIds = new Set(completedProgressBooks.map((p) => p.bookId));
+
+  // Get books marked as "Read" directly (legacy/imported books without ReadingProgress)
+  const directReadBooks = await prisma.book.findMany({
+    where: {
+      read: "Read",
+      id: { notIn: Array.from(progressBookIds) },
+    },
+    select: { id: true, pages: true, dateFinished: true },
+    orderBy: { dateFinished: "asc" },
+  });
+
+  // Total completed books count (both sources)
+  const totalCompletedBooks = completedProgressBooks.length + directReadBooks.length;
+
   const totalSessions = await prisma.readingSession.count({
     where: { userId, endTime: { not: null } },
   });
 
-  const totalPagesResult = await prisma.readingSession.aggregate({
+  // Get pages from reading sessions
+  const sessionPagesResult = await prisma.readingSession.aggregate({
     where: { userId },
     _sum: { pagesRead: true },
   });
-  const totalPages = totalPagesResult._sum.pagesRead || 0;
+  const sessionPages = sessionPagesResult._sum.pagesRead || 0;
+
+  // Add pages from directly-read books (their total page count)
+  const directReadPages = directReadBooks.reduce(
+    (sum, book) => sum + (book.pages || 0),
+    0
+  );
+  const totalPages = sessionPages + directReadPages;
 
   const totalTimeResult = await prisma.readingSession.aggregate({
     where: { userId, duration: { not: null } },
@@ -192,12 +217,12 @@ export async function calculateMilestones(userId: string): Promise<ReadingMilest
   // Define milestones
   const milestoneDefinitions = [
     // Book completion milestones
-    { id: "first_book", name: "First Book", description: "Complete your first book", target: 1, getValue: () => completedBooks.length },
-    { id: "bookworm", name: "Bookworm", description: "Complete 5 books", target: 5, getValue: () => completedBooks.length },
-    { id: "avid_reader", name: "Avid Reader", description: "Complete 10 books", target: 10, getValue: () => completedBooks.length },
-    { id: "bibliophile", name: "Bibliophile", description: "Complete 25 books", target: 25, getValue: () => completedBooks.length },
-    { id: "book_dragon", name: "Book Dragon", description: "Complete 50 books", target: 50, getValue: () => completedBooks.length },
-    { id: "literary_legend", name: "Literary Legend", description: "Complete 100 books", target: 100, getValue: () => completedBooks.length },
+    { id: "first_book", name: "First Book", description: "Complete your first book", target: 1, getValue: () => totalCompletedBooks },
+    { id: "bookworm", name: "Bookworm", description: "Complete 5 books", target: 5, getValue: () => totalCompletedBooks },
+    { id: "avid_reader", name: "Avid Reader", description: "Complete 10 books", target: 10, getValue: () => totalCompletedBooks },
+    { id: "bibliophile", name: "Bibliophile", description: "Complete 25 books", target: 25, getValue: () => totalCompletedBooks },
+    { id: "book_dragon", name: "Book Dragon", description: "Complete 50 books", target: 50, getValue: () => totalCompletedBooks },
+    { id: "literary_legend", name: "Literary Legend", description: "Complete 100 books", target: 100, getValue: () => totalCompletedBooks },
 
     // Session milestones
     { id: "first_session", name: "Getting Started", description: "Complete your first reading session", target: 1, getValue: () => totalSessions },
@@ -228,8 +253,13 @@ export async function calculateMilestones(userId: string): Promise<ReadingMilest
 
     // Find achievement date for book milestones
     let achievedAt: Date | null = null;
-    if (achieved && def.id.includes("book") && completedBooks.length >= def.target) {
-      achievedAt = completedBooks[def.target - 1]?.completedAt || null;
+    if (achieved && def.id.includes("book") && totalCompletedBooks >= def.target) {
+      // Try to get date from ReadingProgress first
+      if (def.target <= completedProgressBooks.length) {
+        achievedAt = completedProgressBooks[def.target - 1]?.completedAt || null;
+      }
+      // If not available, mark as achieved but without specific date
+      // (directly read books may not have completion dates tracked)
     }
 
     return {
@@ -248,15 +278,51 @@ export async function calculateMilestones(userId: string): Promise<ReadingMilest
 
 // Get comprehensive reading stats
 export async function getReadingStats(userId: string): Promise<ReadingStats> {
-  // Count books by status
+  // Count books by status from ReadingProgress
   const statusCounts = await prisma.readingProgress.groupBy({
     by: ["status"],
     where: { userId },
     _count: true,
   });
 
-  const getCount = (status: string) =>
+  const getProgressCount = (status: string) =>
     statusCounts.find((s) => s.status === status)?._count || 0;
+
+  // Get book IDs that have ReadingProgress records
+  const progressBookIds = await prisma.readingProgress.findMany({
+    where: { userId },
+    select: { bookId: true },
+  });
+  const progressBookIdSet = new Set(progressBookIds.map((p) => p.bookId));
+
+  // Count directly-read books (without ReadingProgress records)
+  const directReadCount = await prisma.book.count({
+    where: {
+      read: "Read",
+      id: { notIn: Array.from(progressBookIdSet) },
+    },
+  });
+
+  // Count directly-reading books (without ReadingProgress records)
+  const directReadingCount = await prisma.book.count({
+    where: {
+      read: "Reading",
+      id: { notIn: Array.from(progressBookIdSet) },
+    },
+  });
+
+  // Get pages from directly-read books
+  const directReadBooksWithPages = await prisma.book.findMany({
+    where: {
+      read: "Read",
+      id: { notIn: Array.from(progressBookIdSet) },
+    },
+    select: { pages: true },
+  });
+  const directReadPages = directReadBooksWithPages.reduce(
+    (sum, book) => sum + (book.pages || 0),
+    0
+  );
 
   // Get session aggregates
   const sessionStats = await prisma.readingSession.aggregate({
@@ -273,7 +339,7 @@ export async function getReadingStats(userId: string): Promise<ReadingStats> {
   });
 
   let averageBooksPerMonth = 0;
-  const totalCompleted = getCount("COMPLETED");
+  const totalCompleted = getProgressCount("COMPLETED") + directReadCount;
 
   if (firstCompletion?.completedAt && totalCompleted > 0) {
     const monthsSinceFirst = Math.max(
@@ -310,10 +376,10 @@ export async function getReadingStats(userId: string): Promise<ReadingStats> {
 
   return {
     totalBooksRead: totalCompleted,
-    totalBooksReading: getCount("READING"),
-    totalBooksNotStarted: getCount("NOT_STARTED"),
-    totalBooksDnf: getCount("DNF"),
-    totalPagesRead: sessionStats._sum.pagesRead || 0,
+    totalBooksReading: getProgressCount("READING") + directReadingCount,
+    totalBooksNotStarted: getProgressCount("NOT_STARTED"),
+    totalBooksDnf: getProgressCount("DNF"),
+    totalPagesRead: (sessionStats._sum.pagesRead || 0) + directReadPages,
     totalReadingTime: sessionStats._sum.duration || 0,
     averagePagesPerSession: Math.round(sessionStats._avg.pagesRead || 0),
     averageSessionDuration: Math.round(sessionStats._avg.duration || 0),
