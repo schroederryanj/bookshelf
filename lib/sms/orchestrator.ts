@@ -666,7 +666,7 @@ export async function processMessage(
   // ============================================
   if (response.success && response.data) {
     const contextUpdate: Partial<ExtendedContext> = {
-      lastIntent: classification.intent as ConversationContext['lastIntent'],
+      lastIntent: classification.intent as unknown as ConversationContext['lastIntent'],
       lastBookId: response.data.bookId as number | undefined,
       lastBookTitle: response.data.title as string | undefined,
       awaitingConfirmation: false,
