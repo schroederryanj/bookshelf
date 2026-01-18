@@ -1,4 +1,10 @@
-const SESSION_SECRET = process.env.SESSION_SECRET || "default-secret-change-me";
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    throw new Error("Missing required environment variable: SESSION_SECRET");
+  }
+  return secret;
+}
 
 // Convert string to ArrayBuffer for Web Crypto API
 function stringToArrayBuffer(str: string): ArrayBuffer {
@@ -17,7 +23,7 @@ function bufferToHex(buffer: ArrayBuffer): string {
 async function createHmacSignature(data: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
-    stringToArrayBuffer(SESSION_SECRET),
+    stringToArrayBuffer(getSessionSecret()),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"]
@@ -64,8 +70,23 @@ export async function verifySession(token: string): Promise<boolean> {
   return verifyHmacSignature(timestamp, signature);
 }
 
+// Constant-time string comparison to prevent timing attacks
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    // Still do the comparison to maintain constant time
+    b = a;
+  }
+  let result = a.length ^ b.length;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 export function verifyPassword(password: string): boolean {
   const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) return false;
-  return password === adminPassword;
+  if (!adminPassword) {
+    throw new Error("Missing required environment variable: ADMIN_PASSWORD");
+  }
+  return constantTimeEqual(password, adminPassword);
 }

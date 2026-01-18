@@ -4,12 +4,20 @@ import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
+function getRequiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
 function createPrismaClient() {
   const adapter = new PrismaMariaDb({
-    host: process.env.DB_HOST || "localhost",
-    user: process.env.DB_USER || "bookshelf",
-    password: process.env.DB_PASSWORD || "bookshelf123",
-    database: process.env.DB_NAME || "bookshelf",
+    host: getRequiredEnv("DB_HOST"),
+    user: getRequiredEnv("DB_USER"),
+    password: getRequiredEnv("DB_PASSWORD"),
+    database: getRequiredEnv("DB_NAME"),
     port: parseInt(process.env.DB_PORT || "3306"),
   });
   return new PrismaClient({ adapter });

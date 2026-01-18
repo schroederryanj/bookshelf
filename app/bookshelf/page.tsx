@@ -1,18 +1,30 @@
 import { Shelf } from "@/components/Shelf";
-import { Stats } from "@/components/Stats";
+import { EnhancedStats } from "@/components/EnhancedStats";
 import { prisma } from "@/lib/prisma";
 import { Book } from "@/data/types";
+import { calculateStreak } from "@/lib/reading-stats";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function BookshelfPage() {
+  // Fetch books with their reading progress
   const dbBooks = await prisma.book.findMany({
     orderBy: { position: "asc" },
+    include: {
+      readingProgress: {
+        where: { userId: "default" },
+        take: 1,
+      },
+    },
   });
 
+  // Fetch reading streak
+  const streak = await calculateStreak("default");
+
   // Transform Prisma types to match existing Book type
-  const books: Book[] = dbBooks.map((book: typeof dbBooks[number]) => ({
+  const books: Book[] = dbBooks.map((book) => ({
+    id: book.id,
     title: book.title,
     img: book.img,
     height: book.height,
@@ -33,6 +45,9 @@ export default async function BookshelfPage() {
     ratingRecommend: book.ratingRecommend ?? undefined,
     ratingOverall: book.ratingOverall ?? undefined,
     ratingOverrideManual: book.ratingOverrideManual ?? undefined,
+    // Reading progress
+    currentPage: book.readingProgress[0]?.currentPage ?? undefined,
+    progressPercent: book.readingProgress[0]?.progressPercent ?? undefined,
   }));
 
   return (
@@ -65,8 +80,12 @@ export default async function BookshelfPage() {
       </Link>
 
       <main className="flex flex-col gap-0 row-start-2 items-center ">
-        <Stats books={books}></Stats>
-        <Shelf books={books}></Shelf>
+        <EnhancedStats
+          books={books}
+          currentStreak={streak.currentStreak}
+          longestStreak={streak.longestStreak}
+        />
+        <Shelf books={books} />
       </main>
     </div>
   );

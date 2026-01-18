@@ -39,6 +39,10 @@ model Book {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Relations for reading tracking
+  readingProgress  ReadingProgress[]
+  readingSessions  ReadingSession[]
+
   @@index([title])
   @@index([author])
   @@index([read])
@@ -52,4 +56,77 @@ model Setting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// Reading Progress Tracking Models
+
+enum ReadingStatus {
+  NOT_STARTED
+  READING
+  COMPLETED
+  DNF // Did Not Finish
+}
+
+enum GoalType {
+  BOOKS_PER_MONTH
+  BOOKS_PER_YEAR
+  PAGES_PER_DAY
+}
+
+model ReadingProgress {
+  id              Int           @id @default(autoincrement())
+  bookId          Int
+  userId          String        @default("default") @db.VarChar(255) // For future multi-user support
+  status          ReadingStatus @default(NOT_STARTED)
+  progressPercent Float         @default(0)
+  currentPage     Int           @default(0)
+  totalPages      Int?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, userId])
+  @@index([userId])
+  @@index([status])
+  @@index([startedAt])
+  @@index([completedAt])
+}
+
+model ReadingSession {
+  id         Int       @id @default(autoincrement())
+  bookId     Int
+  userId     String    @default("default") @db.VarChar(255)
+  startTime  DateTime  @default(now())
+  endTime    DateTime?
+  pagesRead  Int       @default(0)
+  duration   Int?      // Duration in seconds
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([bookId])
+  @@index([startTime])
+}
+
+model ReadingGoal {
+  id        Int      @id @default(autoincrement())
+  userId    String   @default("default") @db.VarChar(255)
+  goalType  GoalType
+  target    Int
+  current   Int      @default(0)
+  period    String   @db.VarChar(50) // e.g., "2024-01" for monthly, "2024" for yearly
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, goalType, period])
+  @@index([userId])
+  @@index([goalType])
+  @@index([period])
 }

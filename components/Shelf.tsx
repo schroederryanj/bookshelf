@@ -1,73 +1,63 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Book } from "@/data/types";
 import { RATING_FACTORS } from "@/lib/ratings";
 import { StarRating } from "./ui/StarRating";
+import { ReadingProgressBar } from "./reading-progress/ReadingProgressBar";
 
-const shelfHeight = 500;
-const shelfThickness = 20;
+const SHELF_HEIGHT = 500;
+const SHELF_THICKNESS = 20;
+
+// Pre-computed constants that never change
+const HALF_HEIGHT = SHELF_HEIGHT / 2;
+const HALF_HEIGHT_MINUS_THICKNESS = HALF_HEIGHT - SHELF_THICKNESS;
 
 export function Shelf({ books }: { books: Book[] }) {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [screenWidth, setScreenWidth] = useState(0);
-  const [mounted, setMounted] = useState(false); // track if we're on the client
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true); // now safe to use window
+    setMounted(true);
     const handleResize = () => setScreenWidth(window.innerWidth);
-    handleResize(); // set initial width
+    handleResize();
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Example calculation: make angles proportional to screen width
-  const angle1 =
-    (Math.atan(
-      (screenWidth / 2 - shelfThickness) / (shelfHeight / 2 - shelfThickness)
-    ) *
-      180) /
-    Math.PI;
+  // Memoize expensive angle calculations - only recalculate when screenWidth changes
+  const shelfGeometry = useMemo(() => {
+    if (screenWidth === 0) return null;
 
-  const angle2 =
-    (Math.atan(shelfHeight / 2 / (screenWidth / 2 - shelfThickness)) * 180) /
-      Math.PI +
-    90;
+    const halfWidth = screenWidth / 2;
+    const halfWidthMinusThickness = halfWidth - SHELF_THICKNESS;
 
-  const angle3 =
-    (Math.atan((screenWidth / 2 - shelfThickness) / (shelfHeight / 2)) * 180) /
-      Math.PI +
-    180;
+    const angle1 = (Math.atan(halfWidthMinusThickness / HALF_HEIGHT_MINUS_THICKNESS) * 180) / Math.PI;
+    const angle2 = (Math.atan(HALF_HEIGHT / halfWidthMinusThickness) * 180) / Math.PI + 90;
+    const angle3 = (Math.atan(halfWidthMinusThickness / HALF_HEIGHT) * 180) / Math.PI + 180;
+    const angle4 = (Math.atan(HALF_HEIGHT_MINUS_THICKNESS / halfWidthMinusThickness) * 180) / Math.PI + 270;
 
-  const angle4 =
-    (Math.atan(
-      (shelfHeight / 2 - shelfThickness) / (screenWidth / 2 - shelfThickness)
-    ) *
-      180) /
-      Math.PI +
-    270;
+    const totalDepth = Math.sqrt(HALF_HEIGHT * HALF_HEIGHT + halfWidth * halfWidth);
+    const shelfDepth = totalDepth / 5;
+    const radians1 = ((90 - angle1) * Math.PI) / 180;
+    const radians2 = ((angle2 - 90) * Math.PI) / 180;
 
-  const totalDepth = Math.sqrt(
-    (shelfHeight / 2) * (shelfHeight / 2) +
-      (screenWidth / 2) * (screenWidth / 2)
-  );
+    const depthDiff = totalDepth - shelfDepth;
+    const b = Math.sin(radians1) * depthDiff;
+    const a = Math.cos(radians1) * depthDiff;
+    const verticalOffset = HALF_HEIGHT - b;
+    const horizontalOffset = halfWidth - a;
+    const c = Math.sqrt(depthDiff * depthDiff - a * a);
+    const d = Math.tan(radians2) * a;
 
-  const shelfDepth = totalDepth / 5;
-  const radians1 = ((90 - angle1) * Math.PI) / 180;
+    return { angle1, angle2, angle3, angle4, verticalOffset, horizontalOffset, c, d };
+  }, [screenWidth]);
 
-  const radians2 = ((angle2 - 90) * Math.PI) / 180;
+  if (!mounted || !shelfGeometry) return null;
 
-  const b = Math.sin(radians1) * (totalDepth - shelfDepth);
-  const a = Math.cos(radians1) * (totalDepth - shelfDepth);
-  const verticalOffset = shelfHeight / 2 - b;
-  const horizontalOffset = screenWidth / 2 - a;
-  const c = Math.sqrt(
-    (totalDepth - shelfDepth) * (totalDepth - shelfDepth) - a * a
-  );
-  const d = Math.tan(radians2) * a;
-
-  if (!mounted) return null; // don't render gradient until client
+  const { angle1, angle2, angle3, angle4, verticalOffset, horizontalOffset, c, d } = shelfGeometry;
 
   return (
     <>
@@ -78,7 +68,7 @@ export function Shelf({ books }: { books: Book[] }) {
           className="absolute left-0 top-0 bg-[#8B6B4F]"
           style={{
             width: `${horizontalOffset}px`,
-            bottom: `-${shelfThickness}px`,
+            bottom: `-${SHELF_THICKNESS}px`,
             boxShadow: "inset -6px 0 10px rgba(0,0,0,0.35)",
           }}
         />
@@ -89,7 +79,7 @@ export function Shelf({ books }: { books: Book[] }) {
           style={{
             width: `${horizontalOffset}px`,
             right: `0px`,
-            bottom: `-${shelfThickness}px`,
+            bottom: `-${SHELF_THICKNESS}px`,
             boxShadow: "inset 6px 0 10px rgba(0,0,0,0.35)",
           }}
         />
@@ -105,9 +95,9 @@ export function Shelf({ books }: { books: Book[] }) {
       transparent ${angle3}deg ${angle4}deg,
       transparent ${angle4}deg 360deg
     )`,
-            backgroundSize: `100% ${shelfHeight}px`,
+            backgroundSize: `100% ${SHELF_HEIGHT}px`,
             backgroundRepeat: "repeat-y",
-            bottom: `-${shelfThickness}px`,
+            bottom: `-${SHELF_THICKNESS}px`,
             boxShadow: "inset 0 0 60px rgba(0,0,0,0.15)",
           }}
         />
@@ -123,11 +113,11 @@ export function Shelf({ books }: { books: Book[] }) {
       #ad9c89 ${verticalOffset}px,
       #ad9c89 ${verticalOffset + c + d}px,
       transparent ${verticalOffset + c + d}px,
-      transparent ${shelfHeight}px
+      transparent ${SHELF_HEIGHT}px
     )`,
             left: `${horizontalOffset}px`,
             right: `${horizontalOffset}px`,
-            bottom: `-${shelfThickness}px`,
+            bottom: `-${SHELF_THICKNESS}px`,
           }}
         />
 
@@ -135,8 +125,8 @@ export function Shelf({ books }: { books: Book[] }) {
         <div
           className="flex flex-wrap justify-center items-end relative"
           style={{
-            paddingLeft: `${shelfThickness * 2}px`,
-            paddingRight: `${shelfThickness * 2}px`,
+            paddingLeft: `${SHELF_THICKNESS * 2}px`,
+            paddingRight: `${SHELF_THICKNESS * 2}px`,
           }}
         >
           {books.map((book, index) => (
@@ -144,7 +134,7 @@ export function Shelf({ books }: { books: Book[] }) {
               key={index}
               className="relative flex flex-col items-center justify-end"
               style={{
-                height: `${shelfHeight}px`,
+                height: `${SHELF_HEIGHT}px`,
                 zIndex: 10,
                 paddingBottom: "8px",
               }}
@@ -175,11 +165,11 @@ export function Shelf({ books }: { books: Book[] }) {
             background: `repeating-linear-gradient(
       to bottom,
       #A07A55,
-      #A07A55 ${shelfThickness}px,
-      transparent ${shelfThickness}px,
-      transparent ${shelfHeight}px
+      #A07A55 ${SHELF_THICKNESS}px,
+      transparent ${SHELF_THICKNESS}px,
+      transparent ${SHELF_HEIGHT}px
     )`,
-            bottom: `-${shelfThickness}px`,
+            bottom: `-${SHELF_THICKNESS}px`,
             boxShadow: "inset 0 -6px 10px rgba(0,0,0,0.35)",
           }}
         />
@@ -188,8 +178,8 @@ export function Shelf({ books }: { books: Book[] }) {
         <div
           className="absolute left-0 top-0 bg-[#A07A55]"
           style={{
-            width: `${shelfThickness}px`,
-            bottom: `-${shelfThickness}px`,
+            width: `${SHELF_THICKNESS}px`,
+            bottom: `-${SHELF_THICKNESS}px`,
             // boxShadow: "inset -4px 0 6px rgba(0,0,0,0.3)",
           }}
         />
@@ -198,9 +188,9 @@ export function Shelf({ books }: { books: Book[] }) {
         <div
           className="absolute top-0 bottom-0 bg-[#A07A55]"
           style={{
-            width: `${shelfThickness}px`,
+            width: `${SHELF_THICKNESS}px`,
             right: `0px`,
-            bottom: `-${shelfThickness}px`,
+            bottom: `-${SHELF_THICKNESS}px`,
             // boxShadow: "inset 4px 0 6px rgba(0,0,0,0.3)",
           }}
         />
@@ -361,6 +351,29 @@ export function Shelf({ books }: { books: Book[] }) {
                       )}
                       {selectedBook.dateFinished && (
                         <span>Finished: {selectedBook.dateFinished}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Reading Progress (for books currently being read) */}
+                  {selectedBook.read === "Reading" && selectedBook.pages && (
+                    <div className="mt-4 p-3 rounded bg-white/40">
+                      <div className="text-xs text-[#6b5a4a] uppercase tracking-wider mb-2 font-medium">
+                        Reading Progress
+                      </div>
+                      <ReadingProgressBar
+                        currentPage={selectedBook.currentPage ?? 0}
+                        totalPages={selectedBook.pages}
+                        size="md"
+                        showPercentage={true}
+                      />
+                      {selectedBook.id && (
+                        <a
+                          href={`/admin/reading-progress?bookId=${selectedBook.id}`}
+                          className="mt-2 inline-block text-xs text-[#8b5a2b] hover:text-[#a67c52] font-medium transition-colors"
+                        >
+                          Update Progress →
+                        </a>
                       )}
                     </div>
                   )}

@@ -4,7 +4,14 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminBooksPage() {
+export default async function AdminBooksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const { filter } = await searchParams;
+
+  // Fetch books with description for RandomBookPicker
   const books = await prisma.book.findMany({
     orderBy: { position: "asc" },
     select: {
@@ -15,10 +22,17 @@ export default async function AdminBooksPage() {
       pages: true,
       read: true,
       genre: true,
+      description: true,
       ratingOverall: true,
+      rating: true,
       position: true,
+      createdAt: true,
+      dateFinished: true,
     },
   });
+
+  // Get unique genres for the filter dropdown
+  const genres = [...new Set(books.map(b => b.genre).filter((g): g is string => g !== null))].sort();
 
   return (
     <div className="min-w-0">
@@ -32,9 +46,7 @@ export default async function AdminBooksPage() {
         </Link>
       </div>
 
-      <p className="text-gray-600 mb-4 text-sm sm:text-base">{books.length} books in your collection. Drag to reorder.</p>
-
-      <DraggableBookList books={books} />
+      <DraggableBookList books={books} initialFilter={filter} genres={genres} />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 export type Book = {
+  id?: number;
   title: string;
   img: string;
   height: number;
@@ -21,6 +22,10 @@ export type Book = {
   ratingRecommend?: number;
   ratingOverall?: number;
   ratingOverrideManual?: boolean;
+
+  // Reading progress
+  currentPage?: number;
+  progressPercent?: number;
 
   shelf?: number;
 };
