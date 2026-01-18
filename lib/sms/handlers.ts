@@ -540,6 +540,7 @@ export function handleHelp(): HandlerResponse {
     'Stats: "my stats"',
     '',
     'Just ask naturally!',
+    'Anything Drew would say, goes... :)',
   ].join('\n');
 
   return {
@@ -549,21 +550,33 @@ export function handleHelp(): HandlerResponse {
 }
 
 /**
- * Handle unknown command - try searching first for short messages
+ * Handle unknown command - try searching and be helpful
  */
 export async function handleUnknown(rawMessage: string): Promise<HandlerResponse> {
-  // For short messages (1-3 words), try searching the library
-  const wordCount = rawMessage.trim().split(/\s+/).length;
-  if (wordCount <= 3 && rawMessage.length >= 2) {
-    const searchResult = await handleSearchBook({ query: rawMessage.trim() });
+  const trimmed = rawMessage.trim();
+  const wordCount = trimmed.split(/\s+/).length;
+
+  // For any message up to 5 words, try searching the library
+  // This catches things like "Harry Potter", "Brandon Sanderson", "business books"
+  if (wordCount <= 5 && trimmed.length >= 2) {
+    const searchResult = await handleSearchBook({ query: trimmed });
     // If we found books, return the search result
-    if (searchResult.success && searchResult.data?.books?.length > 0) {
+    if (searchResult.success && searchResult.data?.books &&
+        (searchResult.data.books as Array<unknown>).length > 0) {
       return searchResult;
     }
   }
 
+  // Provide a helpful response with suggestions
+  const suggestions = [
+    'Try: "search [title]" to find books',
+    '"page 50" to update progress',
+    '"recommend fantasy" for suggestions',
+    '"help" for all commands',
+  ];
+
   return {
     success: false,
-    message: `I didn't understand "${rawMessage.substring(0, 30)}${rawMessage.length > 30 ? '...' : ''}". Reply "help" for available commands.`,
+    message: `I couldn't find anything for "${trimmed.substring(0, 25)}${trimmed.length > 25 ? '...' : ''}"\n\n${suggestions.join('\n')}`,
   };
 }

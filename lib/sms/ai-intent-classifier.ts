@@ -438,7 +438,7 @@ const FALLBACK_PATTERNS: Array<{
     }),
   },
 
-  // Search patterns
+  // Search patterns - expanded for natural language
   {
     pattern: /(?:books?\s+by|author)\s+(.+)/i,
     intent: AIIntentType.SEARCH_BOOKS,
@@ -447,7 +447,38 @@ const FALLBACK_PATTERNS: Array<{
     }),
   },
   {
-    pattern: /(?:find|search|do i have|where'?s?)\s+(.+)/i,
+    pattern: /(?:find|search|do i have|where'?s?|looking for|got any)\s+(.+)/i,
+    intent: AIIntentType.SEARCH_BOOKS,
+    extractParams: (match) => ({
+      query: match[1]?.trim(),
+    }),
+  },
+  // Topic/subject searches - "business books", "books about cooking"
+  {
+    pattern: /(.+?)\s+books?$/i,
+    intent: AIIntentType.SEARCH_BOOKS,
+    extractParams: (match) => ({
+      query: match[1]?.trim(),
+    }),
+  },
+  {
+    pattern: /books?\s+(?:about|on)\s+(.+)/i,
+    intent: AIIntentType.SEARCH_BOOKS,
+    extractParams: (match) => ({
+      query: match[1]?.trim(),
+    }),
+  },
+  // "Do I have any X" patterns
+  {
+    pattern: /(?:do i have|have i got)\s+(?:any\s+)?(.+?)(?:\s+books?)?(?:\?|$)/i,
+    intent: AIIntentType.SEARCH_BOOKS,
+    extractParams: (match) => ({
+      query: match[1]?.trim(),
+    }),
+  },
+  // "What X books" without read/finished (general search)
+  {
+    pattern: /what\s+(.+?)\s+books?\s+(?:do i have|are in my (?:library|collection))/i,
     intent: AIIntentType.SEARCH_BOOKS,
     extractParams: (match) => ({
       query: match[1]?.trim(),
@@ -612,6 +643,7 @@ function parseAIResponse(responseText: string): {
       'COMPARE_BOOKS': AIIntentType.COMPARE_BOOKS,
       'TIME_QUERY': AIIntentType.TIME_QUERY,
       'COMPLEX_FILTER': AIIntentType.COMPLEX_FILTER,
+      'DREWBERTS_PICKS': AIIntentType.DREWBERTS_PICKS,
     };
 
     const intent = intentMap[parsed.intent] || AIIntentType.UNKNOWN;

@@ -21,7 +21,9 @@ You can manage your reading via text:
 📈 Stats: "my stats"
 ❓ Help: "help"
 
-Just text naturally - like "What science books are in my library?"`;
+Just text naturally - like "What science books are in my library?"
+
+Anything Drew would say, goes... :)`;
 
 export async function POST(request: NextRequest) {
   try {

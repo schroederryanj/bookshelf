@@ -631,8 +631,8 @@ export async function processMessage(
   // ============================================
   const classification = await classifyIntentWithAI(message);
 
-  // Check if classification is confident enough (threshold 0.4 for better coverage)
-  if (classification.confidence < 0.4 || classification.intent === AIIntentType.UNKNOWN) {
+  // Check if classification is confident enough (threshold 0.3 for generous interpretation)
+  if (classification.confidence < 0.3 || classification.intent === AIIntentType.UNKNOWN) {
     // If we have context and are awaiting confirmation, handle differently
     if (context?.awaitingConfirmation) {
       const lowerMessage = message.toLowerCase().trim();
