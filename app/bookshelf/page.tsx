@@ -1,4 +1,4 @@
-import { Shelf } from "@/components/Shelf";
+import { BookshelfClient } from "@/components/BookshelfClient";
 import { EnhancedStats } from "@/components/EnhancedStats";
 import { prisma } from "@/lib/prisma";
 import { Book } from "@/data/types";
@@ -50,6 +50,15 @@ export default async function BookshelfPage() {
     progressPercent: book.readingProgress[0]?.progressPercent ?? undefined,
   }));
 
+  // Extract unique genres for filter dropdown
+  const genresSet = new Set<string>();
+  books.forEach((book) => {
+    if (book.genre) {
+      book.genre.split(",").forEach((g) => genresSet.add(g.trim()));
+    }
+  });
+  const genres = Array.from(genresSet).sort();
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen">
       {/* Admin Login Button */}
@@ -79,13 +88,13 @@ export default async function BookshelfPage() {
         </svg>
       </Link>
 
-      <main className="flex flex-col gap-0 row-start-2 items-center ">
+      <main className="flex flex-col gap-0 row-start-2 items-center w-full">
         <EnhancedStats
           books={books}
           currentStreak={streak.currentStreak}
           longestStreak={streak.longestStreak}
         />
-        <Shelf books={books} />
+        <BookshelfClient books={books} genres={genres} />
       </main>
     </div>
   );
