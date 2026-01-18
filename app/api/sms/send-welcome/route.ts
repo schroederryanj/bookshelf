@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sendSMS, normalizePhoneNumber } from "@/lib/sms/twilio-service";
 import { prisma } from "@/lib/prisma";
 
-const WELCOME_MESSAGE = `Welcome to Bookshelf SMS Assistant!
+const WELCOME_MESSAGE = `Welcome to Drew's Bookshelf SMS Assistant!
 
 You can manage your reading via text:
 
