@@ -5,6 +5,7 @@ import { Book } from "@/data/types";
 import { RATING_FACTORS } from "@/lib/ratings";
 import { StarRating } from "./ui/StarRating";
 import { ReadingProgressBar } from "./reading-progress/ReadingProgressBar";
+import { SimilarBooks } from "./recommendations/SimilarBooks";
 
 const SHELF_HEIGHT = 500;
 const SHELF_THICKNESS = 20;
@@ -387,6 +388,19 @@ export function Shelf({ books }: { books: Book[] }) {
                   <p className="text-[#4a3f35] whitespace-pre-line leading-relaxed">
                     {selectedBook.description}
                   </p>
+                </div>
+              )}
+
+              {/* Similar Books */}
+              {selectedBook.id && (
+                <div className="px-6 pb-6">
+                  <div className="h-px bg-linear-to-r from-transparent via-[#c4a77d] to-transparent mb-4" />
+                  <SimilarBooks
+                    bookId={selectedBook.id}
+                    bookTitle={selectedBook.title}
+                    onBookClick={(book) => setSelectedBook(book)}
+                    maxResults={6}
+                  />
                 </div>
               )}
             </div>
