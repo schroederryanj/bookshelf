@@ -476,36 +476,36 @@ export async function handleSearchBook(params: IntentParameters): Promise<Handle
  */
 export async function handleGetStats(): Promise<HandlerResponse> {
   try {
-    const [readingCount, completedCount, recentSessions] = await Promise.all([
-      prisma.readingProgress.count({ where: { status: 'READING' } }),
-      prisma.readingProgress.count({ where: { status: 'COMPLETED' } }),
-      prisma.readingSession.findMany({
-        take: 5,
-        orderBy: { startTime: 'desc' },
-        include: { book: true },
+    // Query from Book table which has the actual data
+    const [totalBooks, readCount, readingCount, unreadCount, totalPagesResult] = await Promise.all([
+      prisma.book.count(),
+      prisma.book.count({ where: { read: 'Read' } }),
+      prisma.book.count({ where: { read: 'Reading' } }),
+      prisma.book.count({ where: { OR: [{ read: 'Unread' }, { read: null }, { read: '' }] } }),
+      prisma.book.aggregate({
+        where: { read: 'Read' },
+        _sum: { pages: true },
       }),
     ]);
 
-    // Calculate total pages read from sessions
-    const totalPagesResult = await prisma.readingSession.aggregate({
-      _sum: { pagesRead: true },
-    });
-
-    const totalPages = totalPagesResult._sum.pagesRead || 0;
+    const totalPagesRead = totalPagesResult._sum.pages || 0;
 
     const stats: ReadingStatsSummary = {
       booksReading: readingCount,
-      booksCompleted: completedCount,
-      totalPagesRead: totalPages,
-      currentStreak: 0, // Would need streak tracking logic
-      recentlyRead: recentSessions.map(s => s.book.title),
+      booksCompleted: readCount,
+      totalPagesRead: totalPagesRead,
+      currentStreak: 0,
+      recentlyRead: [],
     };
 
     const message = [
-      'Your Reading Stats:',
-      `Books completed: ${stats.booksCompleted}`,
-      `Currently reading: ${stats.booksReading}`,
-      `Total pages read: ${stats.totalPagesRead.toLocaleString()}`,
+      '📚 Your Reading Stats:',
+      '',
+      `Total books: ${totalBooks}`,
+      `Books read: ${readCount}`,
+      `Currently reading: ${readingCount}`,
+      `To be read: ${unreadCount}`,
+      `Pages read: ${totalPagesRead.toLocaleString()}`,
     ].join('\n');
 
     return {
