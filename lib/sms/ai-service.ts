@@ -121,6 +121,9 @@ Guidelines:
 - Be generous in interpretation - users may use informal language like "whatcha got" or "gimme something good"
 - "What should I read next?" = GET_RECOMMENDATIONS
 - "What am I reading?" = READING_STATUS with readingStatus: "reading"
+- "What Harry Potter books have I read?" = COMPLEX_FILTER with query: "Harry Potter" and readingStatus: "finished"
+- "Have I read any Sanderson?" = COMPLEX_FILTER with query: "Sanderson" and readingStatus: "finished"
+- "Which fantasy books haven't I read?" = COMPLEX_FILTER with genre: "fantasy" and readingStatus: "unread"
 - Greetings like "hi" or "hello" = HELP (show them what they can do)
 - If truly unclear, use UNKNOWN but make confidence low
 

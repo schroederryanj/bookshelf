@@ -820,11 +820,15 @@ export const timeQueryHandler: CommandHandler = async (intent, context) => {
 /**
  * Handle complex filter query
  * "Unread books under 300 pages", "Fantasy rated 4+ stars"
+ * "What Harry Potter books have I read?", "Have I read any Sanderson?"
  */
 export const complexFilterHandler: CommandHandler = async (intent, _context) => {
   try {
     const {
       genre,
+      query,
+      bookTitle,
+      author,
       maxPages,
       minPages,
       minRating,
@@ -834,6 +838,16 @@ export const complexFilterHandler: CommandHandler = async (intent, _context) => 
     } = intent.params as AIIntentParameters;
 
     const whereClause: Record<string, unknown> = {};
+
+    // Text search filter (title, author, description)
+    const searchTerm = query || bookTitle || author;
+    if (searchTerm) {
+      whereClause.OR = [
+        { title: { contains: searchTerm } },
+        { author: { contains: searchTerm } },
+        { description: { contains: searchTerm } },
+      ];
+    }
 
     // Genre filter
     if (genre) {
@@ -895,6 +909,7 @@ export const complexFilterHandler: CommandHandler = async (intent, _context) => 
 
     if (books.length === 0) {
       const filters = [];
+      if (searchTerm) filters.push(`"${truncate(searchTerm, 20)}"`);
       if (genre) filters.push(genre);
       if (maxPages) filters.push(`under ${maxPages}p`);
       if (minRating) filters.push(`${minRating}+ stars`);
@@ -904,6 +919,7 @@ export const complexFilterHandler: CommandHandler = async (intent, _context) => 
 
     // Build header describing filters
     const filterParts = [];
+    if (searchTerm) filterParts.push(`"${truncate(searchTerm, 15)}"`);
     if (readingStatus) filterParts.push(readingStatus);
     if (genre) filterParts.push(genre);
     if (maxPages) filterParts.push(`<${maxPages}p`);
@@ -926,7 +942,7 @@ export const complexFilterHandler: CommandHandler = async (intent, _context) => 
     }
 
     return successResult(lines.join("\n"), {
-      filters: { genre, maxPages, minPages, minRating, readingStatus },
+      filters: { query: searchTerm, genre, maxPages, minPages, minRating, readingStatus },
       totalCount,
       shown: books.length,
       books: books.map((b) => ({ id: b.id, title: b.title })),

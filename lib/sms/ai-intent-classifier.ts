@@ -332,6 +332,32 @@ const FALLBACK_PATTERNS: Array<{
     }),
   },
 
+  // READING_HISTORY_SEARCH - "What Harry Potter books have I read?", "Have I read any Sanderson?"
+  {
+    pattern: /(?:what|which)\s+(.+?)\s+books?\s+(?:have\s+i|did\s+i)\s+(?:read|finish)/i,
+    intent: AIIntentType.COMPLEX_FILTER,
+    extractParams: (match) => ({
+      query: match[1]?.trim(),
+      readingStatus: 'finished' as const,
+    }),
+  },
+  {
+    pattern: /(?:have\s+i|did\s+i)\s+(?:read|finish)\s+(?:any\s+)?(.+?)(?:\s+books?)?(?:\?|$)/i,
+    intent: AIIntentType.COMPLEX_FILTER,
+    extractParams: (match) => ({
+      query: match[1]?.trim(),
+      readingStatus: 'finished' as const,
+    }),
+  },
+  {
+    pattern: /(?:which|what)\s+(.+?)\s+(?:books?\s+)?(?:have\s+i|did\s+i)\s+(?:not\s+)?(?:read|finish)/i,
+    intent: AIIntentType.COMPLEX_FILTER,
+    extractParams: (match, message) => ({
+      query: match[1]?.trim(),
+      readingStatus: message.toLowerCase().includes('not') ? 'unread' as const : 'finished' as const,
+    }),
+  },
+
   // TIME_QUERY - "What did I read last month?", "Books finished in 2023"
   {
     pattern: /(?:what|which|show)\s+(?:did\s+i|books?\s+(?:did\s+)?i)\s+(?:read|finish)\s+(?:in\s+|last\s+|this\s+)?(.+?)(?:\?|$)/i,
@@ -928,6 +954,10 @@ export function quickIntentCheck(message: string): AIIntentType {
   if (/over\s*\d+\s*pages?/i.test(lower)) return AIIntentType.COMPLEX_FILTER;
   if (/(fantasy|sci-?fi|mystery|romance|thriller|horror).*\d\+\s*stars?/i.test(lower)) return AIIntentType.COMPLEX_FILTER;
   if (/\d\+\s*stars?.*(fantasy|sci-?fi|mystery|romance|thriller|horror)/i.test(lower)) return AIIntentType.COMPLEX_FILTER;
+  // "What X books have I read?" patterns
+  if (/what\s+.+\s+books?\s+(?:have\s+i|did\s+i)\s+(?:read|finish)/i.test(lower)) return AIIntentType.COMPLEX_FILTER;
+  if (/(?:have\s+i|did\s+i)\s+(?:read|finish)\s+(?:any\s+)?.+/i.test(lower)) return AIIntentType.COMPLEX_FILTER;
+  if (/which\s+.+\s+(?:books?\s+)?(?:have\s+i|did\s+i)/i.test(lower)) return AIIntentType.COMPLEX_FILTER;
 
   // TIME_QUERY - time-based queries
   if (/(?:what|which).*(?:read|finish).*(?:last|this)\s*(?:week|month|year)/i.test(lower)) return AIIntentType.TIME_QUERY;
