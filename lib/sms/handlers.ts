@@ -388,8 +388,8 @@ export async function handleListReading(): Promise<HandlerResponse> {
  * Searches title, author, genre, and description
  */
 export async function handleSearchBook(params: IntentParameters): Promise<HandlerResponse> {
-  const { query, genre, author } = params;
-  const searchTerm = query || genre || author;
+  const { query, author } = params;
+  const searchTerm = query || author;
 
   if (!searchTerm) {
     return {
