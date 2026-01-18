@@ -103,60 +103,60 @@ export default async function ReadingProgressPage() {
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-[#3d2e1f] mb-2">Reading Progress</h1>
-          <p className="text-[#6b5a4a]">Track your reading journey, start new books, and achieve your goals</p>
-        </header>
+    <div className="min-w-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Reading Progress</h1>
+          <p className="text-gray-600 text-sm sm:text-base mt-1">Track your reading journey, start new books, and achieve your goals</p>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content - 2 columns on large screens */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Start Reading - Most prominent section */}
-            <StartReadingSection books={unreadBooks} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content - 2 columns on large screens */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Start Reading - Most prominent section */}
+          <StartReadingSection books={unreadBooks} />
 
-            {/* Currently Reading */}
-            <CurrentlyReadingSection books={currentlyReadingBooks} />
+          {/* Currently Reading */}
+          <CurrentlyReadingSection books={currentlyReadingBooks} />
 
-            {/* Reading Session Quick Start */}
-            <ReadingSessionSection
-              currentlyReadingBooks={currentlyReadingBooks}
-            />
-          </div>
+          {/* Reading Session Quick Start */}
+          <ReadingSessionSection
+            currentlyReadingBooks={currentlyReadingBooks}
+          />
+        </div>
 
-          {/* Sidebar - Goals and Stats */}
-          <div className="space-y-6">
-            {/* Streak Badge */}
-            <div className="bg-white rounded-xl shadow-md border border-[#e8dfd3] p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-[#3d2e1f]">Reading Streak</h2>
-                {streak.currentStreak >= 7 && (
-                  <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
-                    On Fire!
-                  </span>
-                )}
-              </div>
-              <div className="text-center">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#A07A55] to-[#8B6B4F] text-white mb-3">
-                  <span className="text-3xl font-bold">{streak.currentStreak}</span>
-                </div>
-                <p className="text-sm text-[#6b5a4a] font-medium">Day Streak</p>
-                {streak.longestStreak > streak.currentStreak && (
-                  <p className="text-xs text-[#8b5a2b] mt-2">
-                    Longest: {streak.longestStreak} days
-                  </p>
-                )}
-              </div>
+        {/* Sidebar - Goals and Stats */}
+        <div className="space-y-6">
+          {/* Streak Badge */}
+          <div className="bg-white rounded-xl shadow-md border border-[#e8dfd3] p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-[#3d2e1f]">Reading Streak</h2>
+              {streak.currentStreak >= 7 && (
+                <span className="px-2 py-1 bg-orange-100 text-orange-700 text-xs font-medium rounded-full">
+                  On Fire!
+                </span>
+              )}
             </div>
-
-            {/* Reading Goals */}
-            <GoalsSection goals={transformedGoals} />
-
-            {/* Stats Widget */}
-            <StatsSection stats={widgetStats} />
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#A07A55] to-[#8B6B4F] text-white mb-3">
+                <span className="text-3xl font-bold">{streak.currentStreak}</span>
+              </div>
+              <p className="text-sm text-[#6b5a4a] font-medium">Day Streak</p>
+              {streak.longestStreak > streak.currentStreak && (
+                <p className="text-xs text-[#8b5a2b] mt-2">
+                  Longest: {streak.longestStreak} days
+                </p>
+              )}
+            </div>
           </div>
+
+          {/* Reading Goals */}
+          <GoalsSection goals={transformedGoals} />
+
+          {/* Stats Widget */}
+          <StatsSection stats={widgetStats} />
         </div>
       </div>
     </div>
