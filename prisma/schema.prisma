@@ -130,3 +130,73 @@ model ReadingGoal {
   @@index([goalType])
   @@index([period])
 }
+
+// Gamification / Achievements System
+
+enum AchievementType {
+  MILESTONE     // Books/pages count achievements
+  STREAK        // Reading streak achievements
+  DIVERSITY     // Genre diversity achievements
+  SPEED         // Reading speed achievements
+  COMPLETIONIST // Author/series completion achievements
+}
+
+enum AchievementTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum AchievementCategory {
+  READING_VOLUME   // Total books/pages read
+  READING_STREAK   // Consecutive days reading
+  GENRE_DIVERSITY  // Different genres read
+  READING_SPEED    // Books per time period
+  AUTHOR_LOYALTY   // Multiple books by same author
+  TIME_INVESTMENT  // Total reading time
+}
+
+model Achievement {
+  id          Int                 @id @default(autoincrement())
+  name        String              @db.VarChar(255)
+  description String              @db.Text
+  icon        String              @db.VarChar(100) // Emoji or icon identifier
+  category    AchievementCategory
+  type        AchievementType
+  tier        AchievementTier
+  requirement Json                // Flexible criteria (e.g., { "books": 10 }, { "streak": 7 }, { "genres": 5 })
+  points      Int                 @default(0)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // Relation to user achievements
+  userAchievements UserAchievement[]
+
+  @@unique([name])
+  @@index([category])
+  @@index([type])
+  @@index([tier])
+  @@index([isActive])
+}
+
+model UserAchievement {
+  id            Int         @id @default(autoincrement())
+  userId        String      @default("default") @db.VarChar(255)
+  achievementId Int
+  earnedAt      DateTime    @default(now())
+  progress      Float       @default(0) // 0-100 for partial completion tracking
+  isComplete    Boolean     @default(false)
+  metadata      Json?       // Additional data about how achievement was earned
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
+  @@index([earnedAt])
+  @@index([isComplete])
+}
