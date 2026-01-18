@@ -20,7 +20,7 @@ You can manage your reading via text:
 📈 Stats: "my stats"
 ❓ Help: "help"
 
-Just text naturally - I understand questions like "have I read any sci-fi?" too!`;
+Just text naturally - like "What science books are in my library?"`;
 
 export async function POST(request: NextRequest) {
   try {
