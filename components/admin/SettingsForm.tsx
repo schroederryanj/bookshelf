@@ -7,9 +7,26 @@ type SettingsFormProps = {
   initialSettings: Record<string, string>;
 };
 
+// Parse comma-separated phone numbers into array
+function parsePhoneNumbers(value: string): string[] {
+  return value
+    .split(",")
+    .map((num) => num.trim())
+    .filter((num) => num.length > 0);
+}
+
+// Format phone numbers array back to comma-separated string
+function formatPhoneNumbers(numbers: string[]): string {
+  return numbers.filter((num) => num.trim().length > 0).join(", ");
+}
+
 export function SettingsForm({ initialSettings }: SettingsFormProps) {
   const router = useRouter();
   const [settings, setSettings] = useState(initialSettings);
+  const [phoneNumbers, setPhoneNumbers] = useState<string[]>(() => {
+    const parsed = parsePhoneNumbers(initialSettings.adminPhoneNumbers || "");
+    return parsed.length > 0 ? parsed : [""];
+  });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [sendingWelcome, setSendingWelcome] = useState(false);
@@ -117,26 +134,81 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
               SMS Assistant Phone Numbers
             </h3>
             <p className="text-sm text-gray-500 mb-4">
-              Phone numbers that can use the SMS assistant. Separate multiple
-              numbers with commas. Use E.164 format (e.g., +15551234567) or 10-digit US numbers.
+              Phone numbers that can use the SMS assistant. Use E.164 format
+              (e.g., +15551234567) or 10-digit US numbers.
             </p>
-            <div className="max-w-md">
-              <input
-                type="text"
-                value={settings.adminPhoneNumbers || ""}
-                onChange={(e) =>
-                  setSettings({ ...settings, adminPhoneNumbers: e.target.value })
-                }
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                placeholder="+15551234567, +15559876543"
-              />
+            <div className="space-y-3 max-w-md">
+              {phoneNumbers.map((phone, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => {
+                      const newNumbers = [...phoneNumbers];
+                      newNumbers[index] = e.target.value;
+                      setPhoneNumbers(newNumbers);
+                    }}
+                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                    placeholder="+15551234567"
+                  />
+                  {phoneNumbers.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newNumbers = phoneNumbers.filter(
+                          (_, i) => i !== index
+                        );
+                        setPhoneNumbers(newNumbers);
+                      }}
+                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Remove phone number"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setPhoneNumbers([...phoneNumbers, ""])}
+                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium text-sm"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Add another phone number
+              </button>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              onClick={() =>
-                handleSave("adminPhoneNumbers", settings.adminPhoneNumbers || "")
-              }
+              onClick={() => {
+                const formatted = formatPhoneNumbers(phoneNumbers);
+                setSettings({ ...settings, adminPhoneNumbers: formatted });
+                handleSave("adminPhoneNumbers", formatted);
+              }}
               disabled={saving}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
             >
@@ -144,7 +216,10 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
             </button>
             <button
               onClick={handleSendWelcomeSMS}
-              disabled={sendingWelcome || !settings.adminPhoneNumbers?.trim()}
+              disabled={
+                sendingWelcome ||
+                !phoneNumbers.some((num) => num.trim().length > 0)
+              }
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors font-medium flex items-center justify-center gap-2"
             >
               {sendingWelcome ? (

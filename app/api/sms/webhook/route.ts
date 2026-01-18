@@ -5,7 +5,45 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { processTwilioWebhook, validateTwilioSignature } from '@/lib/sms';
+import { normalizePhoneNumber } from '@/lib/sms/twilio-service';
+import { prisma } from '@/lib/prisma';
 import type { TwilioIncomingMessage } from '@/lib/sms';
+
+/**
+ * Check if a phone number is authorized to use the SMS assistant
+ */
+async function isAuthorizedPhoneNumber(phoneNumber: string): Promise<boolean> {
+  // Check if authorization is disabled in development
+  if (process.env.SKIP_SMS_AUTH === 'true') {
+    return true;
+  }
+
+  try {
+    const setting = await prisma.setting.findUnique({
+      where: { key: 'adminPhoneNumbers' },
+    });
+
+    if (!setting || !setting.value.trim()) {
+      // If no numbers are configured, allow all (for initial setup)
+      return true;
+    }
+
+    // Parse and normalize configured phone numbers
+    const authorizedNumbers = setting.value
+      .split(',')
+      .map((num) => normalizePhoneNumber(num.trim()))
+      .filter((num) => num.length > 0);
+
+    // Normalize the incoming phone number for comparison
+    const normalizedIncoming = normalizePhoneNumber(phoneNumber);
+
+    return authorizedNumbers.includes(normalizedIncoming);
+  } catch (error) {
+    console.error('Error checking phone authorization:', error);
+    // On error, allow the message (fail open for reliability)
+    return true;
+  }
+}
 
 // Twilio sends form-urlencoded data
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -54,6 +92,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         console.warn('Invalid Twilio signature - URL:', url);
         return new NextResponse('Unauthorized', { status: 401 });
       }
+    }
+
+    // Check if phone number is authorized
+    const isAuthorized = await isAuthorizedPhoneNumber(webhookData.From);
+    if (!isAuthorized) {
+      console.warn('Unauthorized phone number attempted SMS:', webhookData.From);
+      return new NextResponse(
+        '<?xml version="1.0" encoding="UTF-8"?><Response><Message>Sorry, this phone number is not authorized to use the SMS assistant. Contact the admin to add your number.</Message></Response>',
+        {
+          status: 200, // Still return 200 to Twilio to send the message
+          headers: { 'Content-Type': 'text/xml' },
+        }
+      );
     }
 
     // Process the message
