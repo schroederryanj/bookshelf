@@ -8,18 +8,19 @@ import { prisma } from "@/lib/prisma";
 
 const WELCOME_MESSAGE = `Welcome to Bookshelf SMS Assistant!
 
-You can now manage your reading via text:
+You can manage your reading via text:
 
 📖 Progress: "page 150" or "50%"
 ▶️ Start: "start [book title]"
 ✅ Finish: "finished [book]"
-📊 Status: "status" or "where am i"
-📚 List: "my books" or "reading list"
-🔍 Search: "find [title/author/genre]"
+🔍 Search: "find Harry Potter"
+📚 History: "What Sanderson books have I read?"
+💡 Suggest: "recommend fantasy"
+📊 Status: "what am I reading?"
 📈 Stats: "my stats"
-❓ Help: "help" or "?"
+❓ Help: "help"
 
-Just reply with any command to get started!`;
+Just text naturally - I understand questions like "have I read any sci-fi?" too!`;
 
 export async function POST(request: NextRequest) {
   try {

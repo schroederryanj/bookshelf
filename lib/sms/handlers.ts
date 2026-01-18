@@ -532,11 +532,13 @@ export function handleHelp(): HandlerResponse {
     'Progress: "page 150" or "50%"',
     'Start: "start [book title]"',
     'Finish: "finished [book]"',
-    'Status: "status" or "where am i"',
-    'List: "my books" or "reading list"',
-    'Search: "find [title/author]"',
+    'Search: "find Harry Potter"',
+    'History: "What X books have I read?"',
+    'Suggest: "recommend fantasy"',
+    'Status: "what am I reading?"',
     'Stats: "my stats"',
-    'Help: "help" or "?"',
+    '',
+    'Just ask naturally!',
   ].join('\n');
 
   return {
